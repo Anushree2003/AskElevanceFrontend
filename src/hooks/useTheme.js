@@ -7,7 +7,7 @@ export function useTheme() {
     const storedTheme = localStorage.getItem("theme");
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     const initialTheme = storedTheme === "dark" || (!storedTheme && prefersDark);
-    setIsDark(initialTheme);  // Consistent naming
+    setIsDark(initialTheme);  
     document.documentElement.classList.toggle("dark", initialTheme);
   }, []);
 
