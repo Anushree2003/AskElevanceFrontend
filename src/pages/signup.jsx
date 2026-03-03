@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTheme } from "../hooks/useTheme";
+import API from "../services/api";  
 
 export default function SignUp() {
   const navigate = useNavigate();
@@ -10,6 +11,7 @@ export default function SignUp() {
     name: "",
     email: "",
     password: "",
+    role:"SDE"
   });
 
   const handleChange = (e) => {
@@ -19,9 +21,17 @@ export default function SignUp() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Signup Data:", formData);
+    
+     try {
+            const response = await API.post("/auth/register", formData);
+
+            alert("Signup successful! Please sign in.");
+        } catch (error) {
+            console.error("Signup failed:", error);
+            alert("Signup failed. Please try again.");
+        }
 
     // Later connect backend here
     navigate("/signin");
