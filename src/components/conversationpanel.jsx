@@ -1,7 +1,51 @@
+import { useEffect, useState } from "react";
 import ChatMessage from "./chatmessage";
 import MessageInput from "./messageinput";
+import api from "../services/api";
 
-export default function ConversationPanel({ messages, isDark, toggleTheme }) {
+const SESSION_ID = 1; // Replace with dynamic session ID if needed
+
+export default function ConversationPanel({ isDark, toggleTheme }) {
+  const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Function to fetch messages from backend with Bearer token
+  const fetchMessages = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await api.get(`/chat/messages/${SESSION_ID}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+      });
+      if (response.data && Array.isArray(response.data)) {
+        setMessages(response.data);
+      }
+      setError(null);
+    } catch (err) {
+      console.error("Failed to fetch messages:", err);
+      setError("Failed to load messages");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Initial fetch on component mount
+  useEffect(() => {
+    fetchMessages();
+  }, []);
+
+  // Set up polling to check for new messages every 2 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchMessages();
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="flex flex-col flex-1">
 
@@ -24,6 +68,11 @@ export default function ConversationPanel({ messages, isDark, toggleTheme }) {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
+        {loading && <p className="text-gray-500 dark:text-gray-400">Loading messages...</p>}
+        {error && <p className="text-red-500">Error: {error}</p>}
+        {!loading && messages.length === 0 && (
+          <p className="text-gray-500 dark:text-gray-400">No messages yet. Start a conversation!</p>
+        )}
         {messages.map((msg) => (
           <ChatMessage
             key={msg.id}
@@ -34,7 +83,7 @@ export default function ConversationPanel({ messages, isDark, toggleTheme }) {
       </div>
 
       {/* Input */}
-      <MessageInput />
+      <MessageInput onMessageSent={fetchMessages} />
     </div>
   );
 }
