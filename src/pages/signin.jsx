@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../context/authcontext";
-import API from "../services/api";  
+import API from "../services/api";
 
 export default function SignIn() {
     const navigate = useNavigate();
@@ -26,14 +26,8 @@ export default function SignIn() {
 
         try {
             const response = await API.post("/auth/login", formData);
-
             const token = response.data.token;
-
-            // Store JWT token
-            localStorage.setItem("token", token);
-            localStorage.setItem("isAuthenticated", "true");
-
-            login(); // update auth context
+            login(token); 
             navigate("/chat");
 
         } catch (error) {
@@ -75,7 +69,7 @@ export default function SignIn() {
                 </p>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
-                    
+
                     {/* Email */}
                     <div>
                         <input

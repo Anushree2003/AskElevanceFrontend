@@ -6,17 +6,17 @@ export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    const storedAuth = localStorage.getItem("isAuthenticated") === "true";
-    setIsAuthenticated(storedAuth);
+    const token = localStorage.getItem("token");
+    setIsAuthenticated(!!token);
   }, []);
 
-  const login = () => {
-    localStorage.setItem("isAuthenticated", "true");
+  const login = (token) => {
+    localStorage.setItem("token", token);
     setIsAuthenticated(true);
   };
 
   const logout = () => {
-    localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("token");
     setIsAuthenticated(false);
   };
 
