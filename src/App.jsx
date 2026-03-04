@@ -9,7 +9,6 @@ import ProtectedRoute from "./components/protectedroute";
 export default function App() {
 
   return (
-    <Router>
       <Routes>
         <Route
           path="/"
@@ -31,6 +30,5 @@ export default function App() {
         />
 
       </Routes>
-    </Router>
   );
 }
