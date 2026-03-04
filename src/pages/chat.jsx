@@ -16,11 +16,6 @@ export default function ChatPage() {
     navigate("/signin");
   };
 
-  const [messages] = useState([
-    { id: 1, sender: "ASSISTANT", content: "Welcome to Elevance AI Assistant." },
-    { id: 2, sender: "USER", content: "Hello, I just joined." },
-  ]);
-
   return (
     <div className="relative h-screen flex bg-white dark:bg-slate-950 
                     text-gray-900 dark:text-white transition-colors duration-300">
@@ -33,7 +28,7 @@ export default function ChatPage() {
 
       <div className="flex-1 flex flex-col">
         <ConversationPanel
-          messages={messages}
+        
           isDark={isDark}
           toggleTheme={toggleTheme}
         />
