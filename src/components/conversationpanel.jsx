@@ -3,7 +3,7 @@ import ChatMessage from "./chatmessage";
 import MessageInput from "./messageinput";
 import api from "../services/api";
 
-const SESSION_ID = 21; // Replace with dynamic session ID if needed
+const SESSION_ID = 8; // Replace with dynamic session ID if needed
 
 export default function ConversationPanel({ isDark, toggleTheme }) {
   const [messages, setMessages] = useState([]);
@@ -83,7 +83,12 @@ export default function ConversationPanel({ isDark, toggleTheme }) {
       </div>
 
       {/* Input */}
-      <MessageInput onMessageSent={fetchMessages} />
+       <MessageInput
+  sessionId={SESSION_ID}
+  onNewMessage={(user, bot, newSessionId) =>
+    onNewMessage(user, bot, newSessionId)
+  }
+/>
     </div>
   );
 }
