@@ -3,7 +3,7 @@ import ChatMessage from "./chatmessage";
 import MessageInput from "./messageinput";
 import api from "../services/api";
 
-const SESSION_ID = 1; // Replace with dynamic session ID if needed
+const SESSION_ID = 21; // Replace with dynamic session ID if needed
 
 export default function ConversationPanel({ isDark, toggleTheme }) {
   const [messages, setMessages] = useState([]);

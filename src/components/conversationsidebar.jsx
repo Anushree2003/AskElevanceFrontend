@@ -1,4 +1,36 @@
+import { useEffect, useState } from "react";
+import API from "../services/api";
+
 export default function ConversationSidebar({ isOpen, toggle, onLogout }) {
+  const [sessions, setSessions] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      setLoading(true);
+      try {
+        const res = await API.get("/chat/sessions");
+        if (!cancelled) {
+          // backend returns an array of session titles
+          setSessions(res.data || []);
+        }
+      } catch (err) {
+        console.error("error fetching sessions", err);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    load();
+    const interval = setInterval(load, 5000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, []);
+
   return (
     <div
       className={`${
@@ -33,9 +65,18 @@ export default function ConversationSidebar({ isOpen, toggle, onLogout }) {
           <p className="mb-2 cursor-pointer hover:text-gray-900 dark:hover:text-white">
             • New Chat
           </p>
-          <p className="cursor-pointer hover:text-gray-900 dark:hover:text-white">
-            • Previous Chat
-          </p>
+          {loading && <p className="text-xs">Loading sessions…</p>}
+          {sessions.map((session, idx) => (
+            <p
+              key={idx}
+              className="cursor-pointer hover:text-gray-900 dark:hover:text-white truncate"
+            >
+              • {session.title}
+            </p>
+          ))}
+          {!loading && sessions.length === 0 && (
+            <p className="text-xs text-gray-500">No sessions</p>
+          )}
         </div>
       )}
 
