@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 
 export default function ConversationSidebar({ isOpen, toggle, onLogout }) {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     let cancelled = false;
@@ -13,7 +15,6 @@ export default function ConversationSidebar({ isOpen, toggle, onLogout }) {
       try {
         const res = await API.get("/chat/sessions");
         if (!cancelled) {
-          // backend returns an array of session titles
           setSessions(res.data || []);
         }
       } catch (err) {
@@ -31,14 +32,43 @@ export default function ConversationSidebar({ isOpen, toggle, onLogout }) {
     };
   }, []);
 
+ const handleNewChat = async () => {
+  try {
+    const token = localStorage.getItem("token");
+
+    const res = await API.post(
+      "/chat/create",
+      {
+        title: "user's new chat session"
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        withCredentials: true
+      }
+    );
+
+    const newSession = res.data;
+
+    setSessions((prev) => [newSession, ...prev]);
+
+    if (newSession?.id) {
+      window.location.href = `/chat/${newSession.id}`;
+    }
+
+  } catch (err) {
+    console.error("error creating session", err);
+  }
+};
+
   return (
     <div
-      className={`${
-        isOpen ? "w-64" : "w-16"
-      } bg-white dark:bg-slate-900 transition-all duration-300 h-full flex flex-col border-r 
+      className={`${isOpen ? "w-64" : "w-16"
+        } bg-white dark:bg-slate-900 transition-all duration-300 h-full flex flex-col border-r 
         border-gray-200 dark:border-slate-700`}
     >
-      {/* Top Header */}
       <div
         className="p-4 border-b border-gray-200 dark:border-slate-700 
                    flex justify-between items-center 
@@ -59,16 +89,22 @@ export default function ConversationSidebar({ isOpen, toggle, onLogout }) {
         </button>
       </div>
 
-      {/* Chat List Section */}
       {isOpen && (
         <div className="p-4 text-sm text-gray-600 dark:text-slate-400 flex-1 overflow-y-auto">
-          <p className="mb-2 cursor-pointer hover:text-gray-900 dark:hover:text-white">
-            • New Chat
-          </p>
+          <button
+            onClick={handleNewChat}
+            className="w-full mb-3 px-3 py-2 text-left rounded-lg 
+             bg-gray-100 dark:bg-slate-800
+             hover:bg-gray-200 dark:hover:bg-slate-700
+             text-gray-900 dark:text-white transition"
+          >
+            + New Chat
+          </button>
           {loading && <p className="text-xs">Loading sessions…</p>}
-          {sessions.map((session, idx) => (
+          {sessions.map((session) => (
             <p
-              key={idx}
+              key={session.id}
+              onClick={() => (window.location.href = `/chat/${session.id}`)}
               className="cursor-pointer hover:text-gray-900 dark:hover:text-white truncate"
             >
               • {session.title}
@@ -80,7 +116,6 @@ export default function ConversationSidebar({ isOpen, toggle, onLogout }) {
         </div>
       )}
 
-      {/* Logout Button at Bottom */}
       <div className="p-4 mt-auto">
         {isOpen && (
           <button
