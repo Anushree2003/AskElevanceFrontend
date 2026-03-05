@@ -3,7 +3,7 @@ import ChatMessage from "./chatmessage";
 import MessageInput from "./messageinput";
 import api from "../services/api";
 
-const SESSION_ID = 8; // Replace with dynamic session ID if needed
+const SESSION_ID = 1;
 
 export default function ConversationPanel({ isDark, toggleTheme }) {
   const [messages, setMessages] = useState([]);
@@ -47,32 +47,40 @@ export default function ConversationPanel({ isDark, toggleTheme }) {
   }, []);
 
   return (
-    <div className="flex flex-col flex-1">
+    <div className="flex flex-col flex-1 h-full min-h-0 bg-white dark:bg-slate-900">
 
-      {/* Header */}
-      <div className="p-4 border-b border-gray-200 dark:border-slate-800 bg-white 
-                      dark:bg-slate-900 flex justify-between items-center">
-        <h1 className="text-lg font-semibold text-gray-900 
-                       dark:text-white">Elevance AI Assistant</h1>
+      <div className="p-4 border-b border-gray-200 dark:border-slate-800 
+                    flex justify-between items-center shrink-0">
+        <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
+          Elevance AI Assistant
+        </h1>
+
         <button
           onClick={toggleTheme}
-
-          className="p-2 rounded-full bg-slate-700 dark:bg-slate-700 
-                     hover:bg-slate-600 dark:hover:bg-slate-600 transition-colors"
+          className="p-2 rounded-full bg-slate-700 
+                   hover:bg-slate-600 transition-colors"
           title="Toggle Theme"
         >
           {isDark ? "☀️" : "🌙"}
         </button>
-
       </div>
-
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
-        {loading && <p className="text-gray-500 dark:text-gray-400">Loading messages...</p>}
-        {error && <p className="text-red-500">Error: {error}</p>}
-        {!loading && messages.length === 0 && (
-          <p className="text-gray-500 dark:text-gray-400">No messages yet. Start a conversation!</p>
+      <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-4">
+        {loading && (
+          <p className="text-gray-500 dark:text-gray-400">
+            Loading messages...
+          </p>
         )}
+
+        {error && (
+          <p className="text-red-500">Error: {error}</p>
+        )}
+
+        {!loading && messages.length === 0 && (
+          <p className="text-gray-500 dark:text-gray-400">
+            No messages yet. Start a conversation!
+          </p>
+        )}
+
         {messages.map((msg) => (
           <ChatMessage
             key={msg.id}
@@ -83,12 +91,12 @@ export default function ConversationPanel({ isDark, toggleTheme }) {
       </div>
 
       {/* Input */}
-       <MessageInput
-  sessionId={SESSION_ID}
-  onNewMessage={(user, bot, newSessionId) =>
-    onNewMessage(user, bot, newSessionId)
-  }
-/>
+      <MessageInput
+        sessionId={SESSION_ID}
+        onNewMessage={(user, bot, newSessionId) =>
+          onNewMessage(user, bot, newSessionId)
+        }
+      />
     </div>
   );
 }

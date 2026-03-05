@@ -2,13 +2,17 @@ export default function ChatMessage({ sender, content }) {
   const isUser = sender === "USER";
 
   return (
-    <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
+    <div className={`flex w-full mb-3 ${isUser ? "justify-end" : "justify-start"}`}>
       <div
-        className={`max-w-md px-4 py-2 rounded-xl text-sm ${
-          isUser
-            ? "bg-gray-200 dark:bg-blue-700 text-gray-900 dark:text-gray-100"
-            : "bg-gray-300 dark:bg-slate-700 text-gray-900 dark:text-slate-200"
-        }`}
+        className={`
+          max-w-[85%] px-4 py-3 rounded-2xl shadow-sm
+          whitespace-pre-wrap break-words
+          ${
+            isUser
+              ? "bg-gray-400 text-gray-900 dark:bg-blue-600 dark:text-white rounded-br-none"
+              : "bg-gray-200 dark:bg-slate-800 text-gray-900 dark:text-white rounded-bl-none"
+          }
+        `}
       >
         {content}
       </div>
