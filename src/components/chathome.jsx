@@ -1,78 +1,148 @@
-export default function ChatHome({ isDark }) {
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import API from "../services/api";
+
+export default function Home() {
+
+  const navigate = useNavigate();
+  const [message, setMessage] = useState("");
+
   const faqs = [
-    {
-      id: 1,
-      question: "What is AskElevance?",
-      answer: "AskElevance is an AI assistant powered by advanced language models to help you with any questions.",
-    },
-    {
-      id: 2,
-      question: "How do I start a new chat?",
-      answer: "Click on 'New Chat' in the sidebar to start a new conversation session.",
-    },
-    {
-      id: 3,
-      question: "Can I save my conversations?",
-      answer: "Yes, all your conversations are automatically saved and can be accessed from the sidebar.",
-    },
-    {
-      id: 4,
-      question: "Is my data secure?",
-      answer: "We use end-to-end encryption and secure authentication to protect your data.",
-    },
-    {
-      id: 5,
-      question: "What models are supported?",
-      answer: "AskElevance supports multiple AI models for different use cases and preferences.",
-    },
+    "How do I reset my password?",
+    "How can I apply for leave?",
+    "Where can I find company policies?",
+    "How do I update my profile information?",
+    "Who should I contact for IT support?"
   ];
 
+  const createSessionAndSend = async (question) => {
+
+    try {
+
+      const token = localStorage.getItem("token");
+
+      // 1️⃣ create session
+      const sessionRes = await API.post(
+        "/chat/create",
+        { title: question },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+
+      const newSession = sessionRes.data;
+
+      navigate(`/chat/${newSession.id}`);
+
+      // 2️⃣ send question
+      await API.post("/chat/send", {
+        sessionId: newSession.id,
+        message: question
+      });
+
+      // 3️⃣ redirect to chat
+      
+
+    } catch (err) {
+      console.error("Error creating chat", err);
+    }
+
+  };
+
+  const handleSend = () => {
+
+    if (!message.trim()) return;
+
+    createSessionAndSend(message);
+    setMessage("");
+
+  };
+
   return (
-    <div className="flex flex-col flex-1 h-full min-h-0 bg-white dark:bg-slate-900 p-6 overflow-y-auto">
-      <div className="max-w-2xl mx-auto w-full">
-        {/* Welcome Section */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Welcome to AskElevance
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-400">
-            Your personal AI assistant. Start a new chat or select an existing conversation from the sidebar.
-          </p>
-        </div>
 
-        {/* FAQs Section */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
-            Frequently Asked Questions
-          </h2>
-          <div className="space-y-4">
-            {faqs.map((faq) => (
-              <div
-                key={faq.id}
-                className="bg-gray-100 dark:bg-slate-800 rounded-lg p-4 hover:shadow-md transition-shadow"
-              >
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                  {faq.question}
-                </h3>
-                <p className="text-gray-700 dark:text-gray-300">{faq.answer}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+    <div className="flex flex-col justify-between h-full p-8">
 
-        {/* Quick Tips */}
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
-          <h3 className="font-semibold text-blue-900 dark:text-blue-300 mb-3">
-            💡 Quick Tips
-          </h3>
-          <ul className="space-y-2 text-blue-800 dark:text-blue-200 text-sm">
-            <li>• Type your question and press Enter to send</li>
-            <li>• Use the theme toggle to switch between light and dark mode</li>
-            <li>• All conversations are automatically saved to your history</li>
-            <li>• You can access previous chats anytime from the sidebar</li>
-          </ul>
-        </div>
+      {/* TITLE */}
+      <div className="text-center mb-10">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          Ask Elevance
+        </h1>
+
+        <p className="text-gray-600 dark:text-slate-400 mt-2">
+          How can I help you today?
+        </p>
       </div>
+
+      {/* FAQ GRID */}
+      <div className="grid grid-cols-2 gap-4 max-w-xl mx-auto">
+
+        {faqs.map((question, index) => (
+
+          <div
+            key={index}
+            onClick={() => createSessionAndSend(question)}
+            className="
+            cursor-pointer
+            bg-gray-100 dark:bg-slate-800
+            hover:bg-gray-200 dark:hover:bg-slate-700
+            text-gray-900 dark:text-white
+            p-4 rounded-lg
+            transition
+            "
+          >
+            {question}
+          </div>
+
+        ))}
+
+      </div>
+
+      {/* CHAT INPUT */}
+      <div className="mt-12 max-w-xl mx-auto w-full">
+
+        <div className="flex gap-2">
+
+          <input
+            type="text"
+            placeholder="Ask something..."
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleSend();
+            }}
+            className="
+            flex-1
+            px-4 py-3
+            rounded-lg
+            bg-gray-100 dark:bg-slate-800
+            border-2 border-gray-300 dark:border-slate-700
+            text-gray-900 dark:text-white
+            outline-none
+            "
+          />
+
+          <button
+            onClick={handleSend}
+            className="
+            bg-blue-700
+            text-white
+            px-6 py-3
+            rounded-lg
+            hover:bg-blue-800
+            transition
+            "
+          >
+            Send ➤
+          </button>
+
+        </div>
+
+      </div>
+
     </div>
+
   );
 }
