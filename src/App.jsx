@@ -25,7 +25,7 @@ export default function App() {
       <Route path="/signin" element={<SignIn />} />
 
       <Route
-        path="/chat"
+        path="/chat/:sessionId?"
         element={
           <ProtectedRoute>
             <ChatPage />

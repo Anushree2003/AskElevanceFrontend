@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import API from "../services/api";
 
 export default function ConversationSidebar({ isOpen, toggle, onLogout }) {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const currentId = pathname.split("/").pop();
 
   useEffect(() => {
     let cancelled = false;
@@ -55,7 +57,7 @@ export default function ConversationSidebar({ isOpen, toggle, onLogout }) {
     setSessions((prev) => [newSession, ...prev]);
 
     if (newSession?.id) {
-      window.location.href = `/chat/${newSession.id}`;
+      navigate(`/chat/${newSession.id}`);
     }
 
   } catch (err) {
@@ -92,6 +94,15 @@ export default function ConversationSidebar({ isOpen, toggle, onLogout }) {
       {isOpen && (
         <div className="p-4 text-sm text-gray-600 dark:text-slate-400 flex-1 overflow-y-auto">
           <button
+            onClick={() => navigate("/chat")}
+            className="w-full mb-3 px-3 py-2 text-left rounded-lg 
+             bg-gray-100 dark:bg-slate-800
+             hover:bg-gray-200 dark:hover:bg-slate-700
+             text-gray-900 dark:text-white transition"
+          >
+            🏠 Home
+          </button>
+          <button
             onClick={handleNewChat}
             className="w-full mb-3 px-3 py-2 text-left rounded-lg 
              bg-gray-100 dark:bg-slate-800
@@ -104,8 +115,12 @@ export default function ConversationSidebar({ isOpen, toggle, onLogout }) {
           {sessions.map((session) => (
             <p
               key={session.id}
-              onClick={() => (window.location.href = `/chat/${session.id}`)}
-              className="cursor-pointer hover:text-gray-900 dark:hover:text-white truncate"
+              onClick={() => navigate(`/chat/${session.id}`)}
+              className={`cursor-pointer truncate hover:text-gray-900 dark:hover:text-white ${
+                String(session.id) === currentId
+                  ? "font-bold text-gray-900 dark:text-white"
+                  : ""
+              }`}
             >
               • {session.title}
             </p>

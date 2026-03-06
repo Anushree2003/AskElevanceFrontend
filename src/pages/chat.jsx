@@ -3,17 +3,27 @@ import ConversationSidebar from "../components/conversationsidebar";
 import ConversationPanel from "../components/conversationpanel";
 import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../context/authcontext";
-import { useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import FaqPanel from "../components/faq";
+import ChatHome from "../components/chathome";
 
 export default function ChatPage() {
   const [isOpen, setIsOpen] = useState(true);
   const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const { sessionId } = useParams();
 
   const handleLogout = () => {
     logout();
     navigate("/signin");
+  };
+
+  // when a message creates a new session, update route
+  const handleNewMessage = (user, bot, newSessionId) => {
+    if (newSessionId && newSessionId !== sessionId) {
+      navigate(`/chat/${newSessionId}`);
+    }
   };
 
   return (
@@ -27,10 +37,17 @@ export default function ChatPage() {
       />
 
       <div className="flex-1 flex flex-col min-h-0">
-        <ConversationPanel
-          isDark={isDark}
-          toggleTheme={toggleTheme}
-        />
+        {sessionId ? (
+          <ConversationPanel
+            isDark={isDark}
+            toggleTheme={toggleTheme}
+            sessionId={sessionId}
+            onNewMessage={handleNewMessage}
+          />
+        ) : (
+          // <FaqPanel />
+          <ChatHome />
+        )}
       </div>
 
     </div>

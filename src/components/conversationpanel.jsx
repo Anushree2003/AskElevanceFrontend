@@ -3,18 +3,27 @@ import ChatMessage from "./chatmessage";
 import MessageInput from "./messageinput";
 import api from "../services/api";
 
-const SESSION_ID = 1;
-
-export default function ConversationPanel({ isDark, toggleTheme }) {
+export default function ConversationPanel({
+  isDark,
+  toggleTheme,
+  sessionId,
+  onNewMessage,
+}) {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // Function to fetch messages from backend with Bearer token
   const fetchMessages = async () => {
+    if (!sessionId) {
+      setMessages([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       const token = localStorage.getItem("token");
-      const response = await api.get(`/chat/messages/${SESSION_ID}`, {
+      const response = await api.get(`/chat/messages/${sessionId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -32,19 +41,35 @@ export default function ConversationPanel({ isDark, toggleTheme }) {
     }
   };
 
-  // Initial fetch on component mount
+  // Initial fetch on sessionId change
   useEffect(() => {
+    setLoading(true);
     fetchMessages();
-  }, []);
+  }, [sessionId]);
 
-  // Set up polling to check for new messages every 2 seconds
+  // Polling when sessionId changes
   useEffect(() => {
+    if (!sessionId) return;
     const interval = setInterval(() => {
       fetchMessages();
     }, 2000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [sessionId]);
+
+  // helper to handle new messages from input
+  const handleNewMessage = (user, bot, newSessionId) => {
+    // optimistically add messages
+    setMessages((prev) => [
+      ...prev,
+      { id: `u-${Date.now()}`, sender: "user", content: user },
+      { id: `b-${Date.now()}`, sender: "bot", content: bot },
+    ]);
+
+    if (onNewMessage) {
+      onNewMessage(user, bot, newSessionId);
+    }
+  };
 
   return (
     <div className="flex flex-col flex-1 h-full min-h-0 bg-white dark:bg-slate-900">
@@ -92,10 +117,8 @@ export default function ConversationPanel({ isDark, toggleTheme }) {
 
       {/* Input */}
       <MessageInput
-        sessionId={SESSION_ID}
-        onNewMessage={(user, bot, newSessionId) =>
-          onNewMessage(user, bot, newSessionId)
-        }
+        sessionId={sessionId}
+        onNewMessage={handleNewMessage}
       />
     </div>
   );
