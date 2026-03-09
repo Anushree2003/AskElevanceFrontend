@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import API from "../services/api";
 
-export default function ConversationSidebar({ isOpen, toggle, onLogout }) {
+function ConversationSidebar({ isOpen, toggle, onLogout }) {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -12,13 +12,22 @@ export default function ConversationSidebar({ isOpen, toggle, onLogout }) {
   useEffect(() => {
     let cancelled = false;
 
-    const load = async () => {
-      setLoading(true);
+    const loadSessions = async () => {
       try {
+        setLoading(true);
+
         const res = await API.get("/chat/sessions");
+        const newSessions = res.data || [];
+
         if (!cancelled) {
-          setSessions(res.data || []);
+          setSessions((prev) => {
+            if (JSON.stringify(prev) === JSON.stringify(newSessions)) {
+              return prev; // prevents unnecessary re-render
+            }
+            return newSessions;
+          });
         }
+
       } catch (err) {
         console.error("error fetching sessions", err);
       } finally {
@@ -26,11 +35,10 @@ export default function ConversationSidebar({ isOpen, toggle, onLogout }) {
       }
     };
 
-    load();
-    const interval = setInterval(load, 5000);
+    loadSessions();
+
     return () => {
       cancelled = true;
-      clearInterval(interval);
     };
   }, []);
 
@@ -152,3 +160,4 @@ export default function ConversationSidebar({ isOpen, toggle, onLogout }) {
     </div>
   );
 }
+export default React.memo(ConversationSidebar);
