@@ -5,6 +5,7 @@ import API from "../services/api";
 function ConversationSidebar({ isOpen, toggle, onLogout }) {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [menuOpenFor, setMenuOpenFor] = useState(null);
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const currentId = pathname.split("/").pop();
@@ -41,6 +42,55 @@ function ConversationSidebar({ isOpen, toggle, onLogout }) {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    const handleDocumentClick = (event) => {
+      if (!event.target.closest(".session-menu")) {
+        setMenuOpenFor(null);
+      }
+    };
+
+    document.addEventListener("click", handleDocumentClick);
+    return () => document.removeEventListener("click", handleDocumentClick);
+  }, []);
+
+  const handleEditSessionTitle = async (session) => {
+    const newTitle = window.prompt("Edit session title", session.title);
+    if (!newTitle || newTitle.trim() === "" || newTitle === session.title) {
+      return;
+    }
+
+    try {
+      const res = await API.put(`/chat/sessions/${session.id}/title`, { title: newTitle });
+      const updated = res.data;
+      setSessions((prev) =>
+        prev.map((s) => (s.id === session.id ? { ...s, title: updated?.title ?? newTitle } : s))
+      );
+    } catch (err) {
+      console.error("error updating session title", err);
+      alert("Could not update session title. Please try again.");
+    } finally {
+      setMenuOpenFor(null);
+    }
+  };
+
+  const handleDeleteSession = async (session) => {
+    const sure = window.confirm("Delete this session? This cannot be undone.");
+    if (!sure) return;
+
+    try {
+      await API.delete(`/chat/sessions/${session.id}`);
+      setSessions((prev) => prev.filter((s) => s.id !== session.id));
+      if (String(session.id) === currentId) {
+        navigate("/chat");
+      }
+    } catch (err) {
+      console.error("error deleting session", err);
+      alert("Could not delete session. Please try again.");
+    } finally {
+      setMenuOpenFor(null);
+    }
+  };
 
   const handleNewChat = async () => {
     try {
@@ -123,7 +173,10 @@ function ConversationSidebar({ isOpen, toggle, onLogout }) {
           {sessions.map((session) => (
             <div
               key={session.id}
-              onClick={() => navigate(`/chat/${session.id}`)}
+              onClick={() => {
+                setMenuOpenFor(null);
+                navigate(`/chat/${session.id}`);
+              }}
               className={`group cursor-pointer px-3 py-2 rounded-lg mb-1 transition-all duration-200
                   ${String(session.id) === currentId
                   ? "bg-gray-200 dark:bg-slate-700 text-gray-900 dark:text-white"
@@ -131,11 +184,45 @@ function ConversationSidebar({ isOpen, toggle, onLogout }) {
                 }`}
             >
               <div className="flex items-center justify-between">
-
                 <span className="truncate text-sm font-medium">
                   {session.title}
                 </span>
 
+                <div className="relative session-menu">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setMenuOpenFor((openId) => (openId === session.id ? null : session.id));
+                    }}
+                    className="ml-2 p-1 rounded hover:bg-gray-200 dark:hover:bg-slate-700"
+                    aria-label="Session menu"
+                  >
+                    ⋮
+                  </button>
+
+                  {menuOpenFor === session.id && (
+                    <div className="absolute right-0 mt-1 w-32 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded shadow-lg z-10">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditSessionTitle(session);
+                        }}
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-slate-700"
+                      >
+                        Edit title
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteSession(session);
+                        }}
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-slate-700 text-red-600 dark:text-red-400"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           ))}
