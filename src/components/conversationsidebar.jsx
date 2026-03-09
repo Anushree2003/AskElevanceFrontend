@@ -34,36 +34,36 @@ export default function ConversationSidebar({ isOpen, toggle, onLogout }) {
     };
   }, []);
 
- const handleNewChat = async () => {
-  try {
-    const token = localStorage.getItem("token");
+  const handleNewChat = async () => {
+    try {
+      const token = localStorage.getItem("token");
 
-    const res = await API.post(
-      "/chat/create",
-      {
-        title: "user's new chat session"
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
+      const res = await API.post(
+        "/chat/create",
+        {
+          title: "user's new chat session"
         },
-        withCredentials: true
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+          withCredentials: true
+        }
+      );
+
+      const newSession = res.data;
+
+      setSessions((prev) => [newSession, ...prev]);
+
+      if (newSession?.id) {
+        navigate(`/chat/${newSession.id}`);
       }
-    );
 
-    const newSession = res.data;
-
-    setSessions((prev) => [newSession, ...prev]);
-
-    if (newSession?.id) {
-      navigate(`/chat/${newSession.id}`);
+    } catch (err) {
+      console.error("error creating session", err);
     }
-
-  } catch (err) {
-    console.error("error creating session", err);
-  }
-};
+  };
 
   return (
     <div
@@ -109,21 +109,27 @@ export default function ConversationSidebar({ isOpen, toggle, onLogout }) {
              hover:bg-gray-200 dark:hover:bg-slate-700
              text-gray-900 dark:text-white transition"
           >
-            + New Chat
+            💬 New Chat
           </button>
           {loading && <p className="text-xs">Loading sessions…</p>}
           {sessions.map((session) => (
-            <p
+            <div
               key={session.id}
               onClick={() => navigate(`/chat/${session.id}`)}
-              className={`cursor-pointer truncate hover:text-gray-900 dark:hover:text-white ${
-                String(session.id) === currentId
-                  ? "font-bold text-gray-900 dark:text-white"
-                  : ""
-              }`}
+              className={`group cursor-pointer px-3 py-2 rounded-lg mb-1 transition-all duration-200
+                  ${String(session.id) === currentId
+                  ? "bg-gray-200 dark:bg-slate-700 text-gray-900 dark:text-white"
+                  : "hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-700 dark:text-slate-300"
+                }`}
             >
-              • {session.title}
-            </p>
+              <div className="flex items-center justify-between">
+
+                <span className="truncate text-sm font-medium">
+                  {session.title}
+                </span>
+
+              </div>
+            </div>
           ))}
           {!loading && sessions.length === 0 && (
             <p className="text-xs text-gray-500">No sessions</p>

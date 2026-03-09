@@ -11,17 +11,12 @@ export default function MessageInput({ sessionId, onNewMessage }) {
 
     try {
       const response = await API.post("/chat/send", {
-        sessionId: sessionId || null,
-        message: text,
+        sessionId: sessionId,
+        message: text
       });
 
       const botReply = response.data.reply || response.data;
-
-      onNewMessage(
-        text,
-        botReply,
-        response.data.sessionId
-      );
+      onNewMessage(text, botReply, sessionId);
 
     } catch (error) {
       console.error("Send failed:", error);

@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 
 export default function Home() {
-
   const navigate = useNavigate();
   const [message, setMessage] = useState("");
 
@@ -20,8 +19,6 @@ export default function Home() {
     try {
 
       const token = localStorage.getItem("token");
-
-      // 1️⃣ create session
       const sessionRes = await API.post(
         "/chat/create",
         { title: question },
@@ -36,16 +33,10 @@ export default function Home() {
       const newSession = sessionRes.data;
 
       navigate(`/chat/${newSession.id}`);
-
-      // 2️⃣ send question
       await API.post("/chat/send", {
         sessionId: newSession.id,
         message: question
       });
-
-      // 3️⃣ redirect to chat
-      
-
     } catch (err) {
       console.error("Error creating chat", err);
     }
@@ -64,7 +55,6 @@ export default function Home() {
   return (
 
     <div className="flex flex-col justify-between h-full p-8">
-
       {/* TITLE */}
       <div className="text-center mb-10">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
