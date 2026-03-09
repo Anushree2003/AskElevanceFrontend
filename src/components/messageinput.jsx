@@ -8,6 +8,10 @@ export default function MessageInput({ sessionId, onNewMessage }) {
     const text = msg || message;
 
     if (!text.trim()) return;
+    onNewMessage({
+      sender: "USER",
+      content: text
+    });
 
     try {
       const response = await API.post("/chat/send", {
@@ -16,7 +20,10 @@ export default function MessageInput({ sessionId, onNewMessage }) {
       });
 
       const botReply = response.data.reply || response.data;
-      onNewMessage(text, botReply, sessionId);
+      onNewMessage({
+        sender: "BOT",
+        content: botReply
+      });
 
     } catch (error) {
       console.error("Send failed:", error);

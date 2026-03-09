@@ -1,5 +1,5 @@
 export default function ChatMessage({ sender, content }) {
-  const isUser = sender === "USER";
+  const isUser = sender?.toLowerCase() === "user";
 
   return (
     <div className={`flex w-full mb-3 ${isUser ? "justify-end" : "justify-start"}`}>

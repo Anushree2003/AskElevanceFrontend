@@ -13,7 +13,6 @@ export default function ConversationPanel({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Function to fetch messages from backend with Bearer token
   const fetchMessages = async () => {
     if (!sessionId) {
       setMessages([]);
@@ -41,34 +40,20 @@ export default function ConversationPanel({
     }
   };
 
-  // Initial fetch on sessionId change
   useEffect(() => {
     setLoading(true);
     fetchMessages();
   }, [sessionId]);
 
-  // Polling when sessionId changes
-  useEffect(() => {
-    if (!sessionId) return;
-    const interval = setInterval(() => {
-      fetchMessages();
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, [sessionId]);
-
-  // helper to handle new messages from input
-  const handleNewMessage = (user, bot, newSessionId) => {
-    // optimistically add messages
+  const handleNewMessage = (msg) => {
     setMessages((prev) => [
       ...prev,
-      { id: `u-${Date.now()}`, sender: "user", content: user },
-      { id: `b-${Date.now()}`, sender: "bot", content: bot },
+      {
+        id: Date.now(),
+        sender: msg.sender,
+        content: msg.content
+      }
     ]);
-
-    if (onNewMessage) {
-      onNewMessage(user, bot, newSessionId);
-    }
   };
 
   return (
@@ -115,7 +100,6 @@ export default function ConversationPanel({
         ))}
       </div>
 
-      {/* Input */}
       <MessageInput
         sessionId={sessionId}
         onNewMessage={handleNewMessage}
