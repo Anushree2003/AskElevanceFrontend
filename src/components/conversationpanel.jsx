@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import ChatMessage from "./chatmessage";
 import MessageInput from "./messageinput";
 import api from "../services/api";
@@ -7,11 +7,12 @@ export default function ConversationPanel({
   isDark,
   toggleTheme,
   sessionId,
-  onNewMessage,
 }) {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isSwitchingSession, setIsSwitchingSession] = useState(false);
+  const bottomRef = useRef(null);
 
   const fetchMessages = async () => {
     if (!sessionId) {
@@ -41,8 +42,16 @@ export default function ConversationPanel({
   };
 
   useEffect(() => {
-    setLoading(true);
-    fetchMessages();
+    const switchSession = async () => {
+      setIsSwitchingSession(true);
+      setTimeout(async () => {
+        setLoading(true);
+        await fetchMessages();
+        setIsSwitchingSession(false);
+      }, 200);
+    };
+
+    switchSession();
   }, [sessionId]);
 
   const handleNewMessage = (msg) => {
@@ -56,6 +65,11 @@ export default function ConversationPanel({
     ]);
   };
 
+  useEffect(() => {
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+    }
+  }, [messages]);
   return (
     <div className="flex flex-col flex-1 h-full min-h-0 bg-white dark:bg-slate-900">
 
@@ -74,7 +88,10 @@ export default function ConversationPanel({
           {isDark ? "☀️" : "🌙"}
         </button>
       </div>
-      <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-4">
+      <div
+        className={`flex-1 min-h-0 overflow-y-auto p-6 space-y-4 transition-opacity duration-300 ${isSwitchingSession ? "opacity-0" : "opacity-100"
+          }`}
+      >
         {loading && (
           <p className="text-gray-500 dark:text-gray-400">
             Loading messages...
@@ -98,6 +115,7 @@ export default function ConversationPanel({
             content={msg.content}
           />
         ))}
+        <div ref={bottomRef}></div>
       </div>
 
       <MessageInput
