@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
+import { useTheme } from "../hooks/useTheme";
 
 export default function Home() {
   const navigate = useNavigate();
   const [message, setMessage] = useState("");
+  const { isDark, toggleTheme } = useTheme();
 
   const faqs = [
     "How do I reset my password?",
@@ -52,7 +54,13 @@ const createSessionAndSend = async (question) => {
   return (
 
     <div className="flex flex-col justify-between h-full p-8">
-      {/* TITLE */}
+      <button
+        onClick={toggleTheme}
+        className="absolute top-4 right-4 p-2 rounded-full bg-slate-700 hover:bg-slate-600 transition-colors shadow-md"
+        title="Toggle Theme"
+      >
+        {isDark ? "☀️" : "🌙"}
+      </button>
       <div className="text-center mb-10">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
           Ask Elevance
