@@ -13,35 +13,32 @@ export default function Home() {
     "How do I update my profile information?",
     "Who should I contact for IT support?"
   ];
+const createSessionAndSend = async (question) => {
+  try {
+    const token = localStorage.getItem("token");
 
-  const createSessionAndSend = async (question) => {
-
-    try {
-
-      const token = localStorage.getItem("token");
-      const sessionRes = await API.post(
-        "/chat/create",
-        { title: question },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-          }
+    const sessionRes = await API.post(
+      "/chat/create",
+      { title: question },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
         }
-      );
+      }
+    );
 
-      const newSession = sessionRes.data;
+    const newSession = sessionRes.data;
 
-      navigate(`/chat/${newSession.id}`);
-      await API.post("/chat/send", {
-        sessionId: newSession.id,
-        message: question
-      });
-    } catch (err) {
-      console.error("Error creating chat", err);
-    }
+    // Navigate and pass the message
+    navigate(`/chat/${newSession.id}`, {
+      state: { firstMessage: question }
+    });
 
-  };
+  } catch (err) {
+    console.error("Error creating chat", err);
+  }
+};
 
   const handleSend = () => {
 

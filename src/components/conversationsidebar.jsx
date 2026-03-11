@@ -13,7 +13,7 @@ function ConversationSidebar({ isOpen, toggle, onLogout }) {
   useEffect(() => {
     let cancelled = false;
 
-    const loadSessions = async () => {
+   const loadSessions = async () => {
       try {
         setLoading(true);
 
@@ -41,7 +41,7 @@ function ConversationSidebar({ isOpen, toggle, onLogout }) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [pathname]);
 
   useEffect(() => {
     const handleDocumentClick = (event) => {

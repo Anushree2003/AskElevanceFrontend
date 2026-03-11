@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import ChatMessage from "./chatmessage";
 import MessageInput from "./messageinput";
 import api from "../services/api";
+import { useLocation } from "react-router-dom";
 
 export default function ConversationPanel({
   isDark,
@@ -13,6 +14,8 @@ export default function ConversationPanel({
   const [error, setError] = useState(null);
   const [isSwitchingSession, setIsSwitchingSession] = useState(false);
   const bottomRef = useRef(null);
+  const location = useLocation();
+const firstMessage = location.state?.firstMessage;
 
   const fetchMessages = async () => {
     if (!sessionId) {
@@ -40,6 +43,43 @@ export default function ConversationPanel({
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+  const sendFirstMessage = async () => {
+    if (!firstMessage || !sessionId) return;
+
+    try {
+      const token = localStorage.getItem("token");
+
+      // show user message instantly
+      handleNewMessage({
+        sender: "user",
+        content: firstMessage
+      });
+
+      await api.post(
+        "/chat/send",
+        {
+          sessionId,
+          message: firstMessage
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      // fetch messages again to get assistant reply
+      await fetchMessages();
+
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  sendFirstMessage();
+}, [sessionId]);
 
   useEffect(() => {
     const switchSession = async () => {
