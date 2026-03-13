@@ -3,6 +3,7 @@ import ChatMessage from "./chatmessage";
 import MessageInput from "./messageinput";
 import api from "../services/api";
 import { useLocation } from "react-router-dom";
+import TypingIndicator from "./typingindicator";
 
 export default function ConversationPanel({
   isDark,
@@ -13,9 +14,10 @@ export default function ConversationPanel({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isSwitchingSession, setIsSwitchingSession] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const bottomRef = useRef(null);
   const location = useLocation();
-const firstMessage = location.state?.firstMessage;
+  const firstMessage = location.state?.firstMessage;
 
   const fetchMessages = async () => {
     if (!sessionId) {
@@ -33,6 +35,7 @@ const firstMessage = location.state?.firstMessage;
         withCredentials: true,
       });
       if (response.data && Array.isArray(response.data)) {
+        setIsTyping(false);
         setMessages(response.data);
       }
       setError(null);
@@ -45,41 +48,41 @@ const firstMessage = location.state?.firstMessage;
   };
 
   useEffect(() => {
-  const sendFirstMessage = async () => {
-    if (!firstMessage || !sessionId) return;
+    const sendFirstMessage = async () => {
+      if (!firstMessage || !sessionId) return;
 
-    try {
-      const token = localStorage.getItem("token");
+      try {
+        const token = localStorage.getItem("token");
 
-      // show user message instantly
-      handleNewMessage({
-        sender: "user",
-        content: firstMessage
-      });
+        // show user message instantly
+        handleNewMessage({
+          sender: "user",
+          content: firstMessage
+        });
 
-      await api.post(
-        "/chat/send",
-        {
-          sessionId,
-          message: firstMessage
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
+        await api.post(
+          "/chat/send",
+          {
+            sessionId,
+            message: firstMessage
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
           }
-        }
-      );
+        );
 
-      // fetch messages again to get assistant reply
-      await fetchMessages();
+        // fetch messages again to get assistant reply
+        await fetchMessages();
 
-    } catch (err) {
-      console.error(err);
-    }
-  };
+      } catch (err) {
+        console.error(err);
+      }
+    };
 
-  sendFirstMessage();
-}, [sessionId]);
+    sendFirstMessage();
+  }, [sessionId]);
 
   useEffect(() => {
     const switchSession = async () => {
@@ -103,6 +106,10 @@ const firstMessage = location.state?.firstMessage;
         content: msg.content
       }
     ]);
+
+    if (msg.sender?.toLowerCase() === "user") {
+      setIsTyping(true);
+    }
   };
 
   useEffect(() => {
@@ -155,6 +162,9 @@ const firstMessage = location.state?.firstMessage;
             content={msg.content}
           />
         ))}
+        {isTyping && messages[messages.length - 1]?.sender?.toLowerCase() === "user" && (
+          <TypingIndicator />
+        )}
         <div ref={bottomRef}></div>
       </div>
 

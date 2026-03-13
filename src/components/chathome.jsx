@@ -9,11 +9,12 @@ export default function Home() {
   const { isDark, toggleTheme } = useTheme();
 
   const faqs = [
-    "How do I reset my password?",
-    "How can I apply for leave?",
-    "Where can I find company policies?",
-    "How do I update my profile information?",
-    "Who should I contact for IT support?"
+    "How do I clock time at Time@IBM?",
+    "How can I check my attendance?",
+    "How do I setup Citrix on my laptop?",
+    "How do I setup VPN on my laptop?",
+    "Which training courses I should take as a new joinee to Elevance?",
+    "What is hierarchy chart of Elevance team in IBM?",
   ];
 const createSessionAndSend = async (question) => {
   try {
